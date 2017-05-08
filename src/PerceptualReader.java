@@ -1,25 +1,19 @@
 import processing.core.PApplet;
-import processing.core.PImage;
-import rita.RiTa;
-import rita.RiText;
+import rita.*;
 import rita.support.behavior.RiLerpBehavior;
 
 public class PerceptualReader extends PApplet
 {
-  static final String FONT = "Baskerville";
-  static final String TXT =  "misspeltLandings.txt" ;
-  static final int LEADING = 40, FONT_SZ = 36;
-  static final int NUM_LINES_ABOVE = 3, NUM_LINES_BELOW = 3;
-  static final int DISPLAY_WIDTH = 480, DISPLAY_X = 133;
+  int LEADING = 40, NUM_LINES_ABOVE = 3, NUM_LINES_BELOW = 3;
+  int DISPLAY_WIDTH = 480, DISPLAY_X = 133;
   
-  static boolean isApplet = true, showPhoneFrame = true, showFps = false;
+  static boolean isApplet = true;
   
   float lineW, spaceW, speed=.1f;
   int mouseDownX, arrowSpeed=-1;
   RiText driver, words[][];
   RiLerpBehavior lerp;
   boolean dragging;
-  PImage phImg;
   String text;
 
   public void setup()
@@ -28,11 +22,9 @@ public class PerceptualReader extends PApplet
     
     frameRate(50);
     RiText.disableAutoDraw();
-    RiText.createDefaultFont(this, FONT, FONT_SZ);
-    
-    phImg = loadImage("iphone.png");
+    RiText.createDefaultFont(this, "Baskerville", 36);
 
-    doInitialLayout(TXT);
+    doInitialLayout("misspeltLandings.txt");
     
     lerp = driver.createLerp(this);
     lerp.setMotionType(RiTa.EASE_OUT);
@@ -58,22 +50,10 @@ public class PerceptualReader extends PApplet
 
     RiText.drawAll();
     
-    if (showPhoneFrame) {
-      image(phImg,0,0);
-      noStroke();
-      fill(255);
-      rect(0,0,6,height);
-    }
-    else 
-      verticalLines();
-    
-    if (showFps) {
-      fill(0);  // framerate
-      text(frameRate,20,20);
-    }
+   
+    verticalLines();
   }
-  // ------------------------ METHODS -------------------------------
-  
+
   void shiftLine(int lineIdx, float offsetX) 
   {
     int offset = Math.round(offsetX);
@@ -99,9 +79,6 @@ public class PerceptualReader extends PApplet
   public void keyPressed() {
 
     switch(keyCode) {
-      case 32:
-        showPhoneFrame = !showPhoneFrame;
-        break;
       case 37: // right
         arrowSpeed = (arrowSpeed>0) ? arrowSpeed+1 : 1;
         break;

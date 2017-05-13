@@ -24,7 +24,7 @@ var lerpValue = 0,
 function preload() {
 
     if (!defaultFont) font = loadFont('Baskerville.ttf');
-    words = loadStrings("../src/data/misspeltLandings.txt");
+    words = loadStrings("misspeltLandings.txt");
 
 }
 

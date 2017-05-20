@@ -1,0 +1,26 @@
+{
+  "name": "perceptual-reader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "code.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dhowe/PerceptualReader.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dhowe/PerceptualReader/issues"
+  },
+  "homepage": "https://github.com/dhowe/PerceptualReader#readme",
+  "dependencies": {
+    "p5": "^0.5.9",
+    "rita": "^1.1.63"
+  },
+  "devDependencies": {
+    "eslint-config-p5js": "^1.0.1"
+  }
+}

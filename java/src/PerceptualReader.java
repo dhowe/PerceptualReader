@@ -190,5 +190,4 @@ public class PerceptualReader extends PApplet
     PApplet.main(new String[]{PerceptualReader.class.getName()});
   }
 
-
 }// end

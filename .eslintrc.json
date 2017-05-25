@@ -8,7 +8,7 @@
     "default-case": "off",
     "no-mixed-operators": "off",
     "no-use-before-define": ["error", { "functions": false }],
-    "no-unused-vars": ["error", { "varsIgnorePattern": "(preload|draw|setup|keyPressed|keyReleased|mousePressed|mouseReleased|mouseMoved|mouseDragged)" }],
+    "no-unused-vars": ["error", { "varsIgnorePattern": "(preload|draw|setup|mouseClicked|keyPressed|keyReleased|mousePressed|mouseReleased|mouseMoved|mouseDragged)" }],
     "no-constant-condition": "off",
     "no-console": "off",
     "block-scoped-var": "off",

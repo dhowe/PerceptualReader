@@ -1,203 +1,193 @@
-var LEADING = 40,
-    NUM_LINES_ABOVE = 3,
-    NUM_LINES_BELOW = 3;
+var NUM_LINES = 7, DISPLAY_WIDTH = 495, DISPLAY_X = 113, LEADING = 40;
 
-var DISPLAY_WIDTH = 480,
-    DISPLAY_X = 133;
-
-var words, lineW = 0, spaceW,
-    arrowSpeed = -1,
-    shift;
-
-var totalLines, lines = [];
-
-var font;
-
-var dbug = false,
-    defaultFont = false;
-
-//Lerp
-var lerpValue = 0,
-    speed = .1,
-    dragging, mouseDownX;
+var words, lineW = 0, spaceW, arrowSpeed = -1, shift;
+var lerpValue = 0, speed = 0.1, dragging, mouseDownX;
+var numLinesBelow = 7, lines = [], showBorder = true;
+var font, dbug = false, defaultFont = false;
 
 function preload() {
 
-    if (!defaultFont) font = loadFont('Baskerville.ttf');
-    words = loadStrings("misspeltLandings.txt");
-
+  if (!defaultFont) font = loadFont("Baskerville.ttf");
+  words = loadStrings("misspeltLandings.txt");
 }
 
 function setup() {
 
-    createCanvas(727, 387);
-    background(255);
-    frameRate(50);
+  createCanvas(727, 387);
+  background(255);
+  frameRate(50);
 
-    //STYLES
-    fill(0);
-    if (!defaultFont) textFont(font);
-    textSize(36);
-    words = words[0].split(" ");
-    spaceW = textWidth(" ");
-    for (var i = 0; i < words.length; i++){
-      lineW += textWidth(words[i]) + (i === 0 ? 0: spaceW);
-    }
+  fill(0);
+  textSize(36);
+  if (!defaultFont) textFont(font);
 
-    totalLines = NUM_LINES_ABOVE + NUM_LINES_ABOVE + 1;
+  spaceW = textWidth(" ");
+  words = words[0].split(" ");
 
-    console.log("Line width:", lineW);
-    console.log("Space width:", spaceW);
+  for (var i = 0; i < words.length; i++) {
+    lineW += textWidth(words[i]) + (i === 0 ? 0 : spaceW);
+  }
 
-    doInitialLayout();
+  numLinesBelow = floor(NUM_LINES / 2);
+
+  doInitialLayout();
 }
 
 function draw() {
 
+  background(255);
+  noStroke();
 
-    background(255);
-    if (abs(lerpValue) > 1 && !dragging) lerpValue = Math.sign(lerpValue) * abs(lerp((lerpValue) * speed, 0, 10));
-    shift = lerpValue;
+  if (abs(lerpValue) > 1 && !dragging)
+    lerpValue = Math.sign(lerpValue) * abs(lerp(lerpValue * speed, 0, 10));
+  shift = lerpValue;
 
-    //draw 7 lines
-    var yOff = height / 2 + 5;
-    textLine(words, lines[NUM_LINES_BELOW], yOff);
-    for (var i = NUM_LINES_BELOW + 1; i < totalLines; i++) {
-        textLine(words, lines[i], yOff += LEADING);
-    }
-    yOff = height / 2 + 5;
-    for (var i = NUM_LINES_BELOW - 1; i >= 0; i--) {
-        textLine(words, lines[i], yOff -= LEADING);
-    }
+  // draw the lines of text
+  var yOff = height / 2 + 5;
+  textLine(words, lines[numLinesBelow], yOff);
+  for (var i = numLinesBelow + 1; i < NUM_LINES; i++) {
+    textLine(words, lines[i], (yOff += LEADING));
+  }
 
-    // but use arrows if specified
-    if (arrowSpeed != 0)
-        shift = arrowSpeed;
+  yOff = height / 2 + 5;
+  for (var i = numLinesBelow - 1; i >= 0; i--) {
+    textLine(words, lines[i], (yOff -= LEADING));
+  }
 
-    // and keep a minimum speed
-    if (abs(shift) < 1)
-        shift = shift < 0 ? -1 : 1;
+  // but use arrows if specified
+  if (arrowSpeed != 0) shift = arrowSpeed;
 
-    for (var i = 0; i < totalLines; i++)
-        shiftLine(i, shift);
+  // and keep a minimum speed
+  if (abs(shift) < 1) shift = shift < 0 ? -1 : 1;
 
-    verticalLines();
+  for (var i = 0; i < NUM_LINES; i++)
+    shiftLine(i, shift);
+
+  drawBorders();
+}
+
+function mouseClicked() {
+
+  showBorder = !showBorder;
 }
 
 function shiftLine(lineIdx, offset) {
 
-    if (offset != 0) {
+  if (offset != 0) {
+    lines[lineIdx] += offset;
 
-        lines[lineIdx] += offset;
-
-        if (offset < 0 && offScreenLeft(lines[lineIdx] + lineW)) {
-            lines[lineIdx] += lineW + spaceW;
-        } else if (offset > 0 && offScreenRight(lines[lineIdx] - lineW)) {
-            lines[lineIdx] -= lineW + spaceW;
-        }
-
+    if (offset < 0 && offScreenLeft(lines[lineIdx] + lineW)) {
+      lines[lineIdx] += lineW + spaceW;
+    } else if (offset > 0 && offScreenRight(lines[lineIdx] - lineW)) {
+      lines[lineIdx] -= lineW + spaceW;
     }
-
+  }
 }
 
 function textLine(words, x, y) {
-    var log = "";
-    var cursor = x;
-    for (var i = 0; i < words.length; i++) {
-        var word = words[i];
 
-        if (i != 0) {
-            var lastWord = words[i - 1],
-                offSet = textWidth(lastWord) + spaceW;
-            cursor += offSet;
-        }
-        var currentX = cursor;
+  var log = "", cursor = x;
 
-        //text loop
-        if (!offScreenRight(lineEnd(x)) && !offScreenRight(cursor + lineW)) {
-            currentX += lineW + spaceW;
-        } else if (!offScreenLeft(x) && !offScreenLeft(cursor - lineW + textWidth(word))) {
-            currentX -= lineW + spaceW;
-        }
-        //only draw text if it is onScreen
-        drawVisibleText(word, currentX, y);
+  for (var i = 0; i < words.length; i++) {
+    var word = words[i];
 
-        log += cursor + " ";
-
+    if (i != 0) {
+      var lastWord = words[i - 1], offSet = textWidth(lastWord) + spaceW;
+      cursor += offSet;
     }
-    if (dbug) console.log(log);
+    var currentX = cursor;
+
+    // text loop
+    if (!offScreenRight(lineEnd(x)) && !offScreenRight(cursor + lineW)) {
+      currentX += lineW + spaceW;
+    } else if (!offScreenLeft(x) && !offScreenLeft(cursor - lineW + textWidth(word))) {
+      currentX -= lineW + spaceW;
+    }
+
+    // only draw text if it is onScreen
+    drawVisibleText(word, currentX, y);
+
+    log += cursor + " ";
+  }
+
+  if (dbug) console.log(log);
 }
 
 function drawVisibleText(word, x, y) {
-    if (!offScreen(x, textWidth(word))) {
-        // console.log(word,x,y);
-        text(word, x, y);
-    }
+
+  if (!offScreen(x, textWidth(word))) {
+    // console.log(word,x,y);
+    text(word, x, y);
+  }
 }
 
-function verticalLines() {
-    var x = [ DISPLAY_X, DISPLAY_WIDTH + DISPLAY_X ];
+function drawBorders() {
+  var lx = [ DISPLAY_X, DISPLAY_WIDTH + DISPLAY_X ];
+  if (showBorder) {
+    fill(50);
+    noStroke();
+    rect(lx[0] + 1, 0, -lx[0] - 2, height);
+    rect(lx[1], 0, width - lx[1], height);
+  } else {
     stroke(200, 0, 0);
-    for (var i = 0; i < x.length; i++)
-        line(x[i], 0, x[i], height);
+    for (var i = 0; i < lx.length; i++) {
+      line(lx[i], 0, lx[i], height);
+    }
+  }
 }
 
 function doInitialLayout() {
-    //init lines
-    lines = new Array(totalLines);
-    for (var i = 0; i < lines.length; i++) {
-        lines[i] = DISPLAY_X;
-    }
 
-    // align rows so middle row is at start left
-    for (var i = 0; i < totalLines; i++) {
-        var offset = (DISPLAY_WIDTH * -(i - floor(totalLines / 2)));
-        if (offset > 0)
-            offset = -1 * (lineW + spaceW - offset);
-        lines[i] += offset;
-    }
+  lines = new Array(NUM_LINES);
+  for (var i = 0; i < lines.length; i++) {
+    lines[i] = DISPLAY_X;
+  }
 
-
+  // align rows so middle row is at start left
+  for (var i = 0; i < NUM_LINES; i++) {
+    var offset = DISPLAY_WIDTH * -(i - floor(NUM_LINES / 2));
+    if (offset > 0) offset = -1 * (lineW + spaceW - offset);
+    lines[i] += offset;
+  }
 }
 
 function offScreen(c, l) {
-    return offScreenRight(c) || offScreenLeft(c + l);
+  return offScreenRight(c) || offScreenLeft(c + l);
 }
 
 function offScreenRight(c) {
-    return c > (DISPLAY_X + DISPLAY_WIDTH);
+  return c > DISPLAY_X + DISPLAY_WIDTH;
 }
 
 function offScreenLeft(c) {
-    return c < DISPLAY_X;
+  return c < DISPLAY_X;
 }
 
 function lineEnd(lineStart) {
-    return lineStart + lineW;
+  return lineStart + lineW;
 }
 
 function keyPressed() {
-    switch (keyCode) {
-        case RIGHT_ARROW:
-            arrowSpeed = (arrowSpeed > 0) ? arrowSpeed + 1 : 1;
-            break;
-        case LEFT_ARROW:
-            arrowSpeed = (arrowSpeed < 0) ? arrowSpeed - 1 : -1;
-            break;
-    }
+  switch (keyCode) {
+    case RIGHT_ARROW:
+      arrowSpeed = arrowSpeed > 0 ? arrowSpeed + 1 : 1;
+      break;
+    case LEFT_ARROW:
+      arrowSpeed = arrowSpeed < 0 ? arrowSpeed - 1 : -1;
+      break;
+  }
 }
 
 function mousePressed() {
-    mouseDownX = mouseX;
+  mouseDownX = mouseX;
 }
 
 function mouseDragged() {
-    arrowSpeed = 0;
-    dragging = true;
-    lerpValue = lerp((mouseX - mouseDownX) * speed, 0, 4);
+  arrowSpeed = 0;
+  dragging = true;
+  lerpValue = lerp((mouseX - mouseDownX) * speed, 0, 4);
 }
 
 function mouseReleased() {
-    dragging = false;
-
+  dragging = false;
 }

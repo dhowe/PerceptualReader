@@ -2,12 +2,12 @@ var NUM_LINES = 7, DISPLAY_WIDTH = 495, DISPLAY_X = 113, LEADING = 40;
 
 var words, lineW = 0, spaceW, arrowSpeed = -1, shift;
 var lerpValue = 0, speed = 0.1, dragging, mouseDownX;
-var numLinesBelow = 7, lines = [], showBorder = true;
-var font, dbug = false, defaultFont = false;
+var numLinesBelow, lines = [], showBorder = true;
+var font, textWidths = {};
 
 function preload() {
 
-  if (!defaultFont) font = loadFont("Baskerville.ttf");
+  font = loadFont("Baskerville.ttf");
   words = loadStrings("misspeltLandings.txt");
 }
 
@@ -19,13 +19,13 @@ function setup() {
 
   fill(0);
   textSize(36);
-  if (!defaultFont) textFont(font);
+  if (font) textFont(font);
 
-  spaceW = textWidth(" ");
+  spaceW = cachedTextWidth(" ");
   words = words[0].split(" ");
 
   for (var i = 0; i < words.length; i++) {
-    lineW += textWidth(words[i]) + (i === 0 ? 0 : spaceW);
+    lineW += cachedTextWidth(words[i]) + (i === 0 ? 0 : spaceW);
   }
 
   numLinesBelow = floor(NUM_LINES / 2);
@@ -66,11 +66,6 @@ function draw() {
   drawBorders();
 }
 
-function mouseClicked() {
-
-  showBorder = !showBorder;
-}
-
 function shiftLine(lineIdx, offset) {
 
   if (offset != 0) {
@@ -84,15 +79,24 @@ function shiftLine(lineIdx, offset) {
   }
 }
 
+function cachedTextWidth(word) {
+
+  var result = textWidths[word];
+  if (!result) {
+     result = textWidth(word);
+     textWidths[word] = result;
+  }
+  return result;
+}
+
 function textLine(words, x, y) {
 
-  var log = "", cursor = x;
+  var dbug = 0, log = dbug ? '' : null, cursor = x;
 
   for (var i = 0; i < words.length; i++) {
-    var word = words[i];
 
     if (i != 0) {
-      var lastWord = words[i - 1], offSet = textWidth(lastWord) + spaceW;
+      var lastWord = words[i - 1], offSet = cachedTextWidth(lastWord) + spaceW;
       cursor += offSet;
     }
     var currentX = cursor;
@@ -100,31 +104,26 @@ function textLine(words, x, y) {
     // text loop
     if (!offScreenRight(lineEnd(x)) && !offScreenRight(cursor + lineW)) {
       currentX += lineW + spaceW;
-    } else if (!offScreenLeft(x) && !offScreenLeft(cursor - lineW + textWidth(word))) {
+    } else if (!offScreenLeft(x) && !offScreenLeft(cursor - lineW + cachedTextWidth(words[i]))) {
       currentX -= lineW + spaceW;
     }
 
     // only draw text if it is onScreen
-    drawVisibleText(word, currentX, y);
+    if (!offScreen(currentX, cachedTextWidth(words[i]))) {
+      text(words[i], currentX, y);
+    }
 
-    log += cursor + " ";
+    if (dbug) log += cursor + ' ';
   }
 
   if (dbug) console.log(log);
 }
 
-function drawVisibleText(word, x, y) {
-
-  if (!offScreen(x, textWidth(word))) {
-    // console.log(word,x,y);
-    text(word, x, y);
-  }
-}
-
 function drawBorders() {
+
   var lx = [ DISPLAY_X, DISPLAY_WIDTH + DISPLAY_X ];
   if (showBorder) {
-    fill(50);
+    fill(30);
     noStroke();
     rect(lx[0] + 1, 0, -lx[0] - 2, height);
     rect(lx[1], 0, width - lx[1], height);
@@ -169,6 +168,12 @@ function lineEnd(lineStart) {
 
 function keyPressed() {
   switch (keyCode) {
+    case UP_ARROW:
+      showBorder = !showBorder;
+      break;
+    case DOWN_ARROW:
+      showBorder = !showBorder;
+      break;
     case RIGHT_ARROW:
       arrowSpeed = arrowSpeed > 0 ? arrowSpeed + 1 : 1;
       break;

@@ -22,7 +22,7 @@ body {
 .rel {
   position: relative;
 }
-
+/* 
 #instructions {
   font-family: Courier, Arial, Helvetica, sans-serif;
   font-size: 11px;
@@ -31,7 +31,7 @@ body {
   padding:20px;
   display: block;
 }
-
+ */
 canvas {
   margin: auto;
   display: block;

@@ -12,7 +12,7 @@ function preload() {
 
 function setup() {
 
-  createCanvas(200, 200);
+  createCanvas(200, 200).parent("content");
   frameRate(50);
   windowResized();
 }
@@ -59,6 +59,8 @@ function windowResized() {
   let w = windowWidth - margin;
   let h = 387 / 727 * windowWidth - margin;
   resizeCanvas(w, h);  
+/*   let ele = document.getElementById("instructions")
+  ele.style.top = (height+50)+"px"; */
 
   fill(0);
   textFont(font);
